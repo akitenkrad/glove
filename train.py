@@ -19,17 +19,18 @@ def run_train(ds_path: str, outdir:str='output', logdir: str='logs', epochs: int
     X_MAX = 100
     ALPHA = 0.75
     
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    
     with open(ds_path) as f:
         dataset = GloveDataset(f.read(), N_WORDS)
+        
     glove = GloveModel(dataset._vocab_len, EMBED_DIM)
+    glove = glove.train().to(device)
     optimizer = optim.Adagrad(glove.parameters(), lr=0.05)
     
     st = time()
     n_batches = int(len(dataset._xij) / BATCH_SIZE)
     loss_values = []
-    
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    glove = glove.train().to(device)
     
     os.makedirs(str(Path(outdir)), exist_ok=True)
     os.makedirs(str(Path(logdir)), exist_ok=True)
