@@ -8,7 +8,7 @@ import torch
 class GloveDataset(object):
     def __init__(self, text, n_words=200000, window_size=5):
         self._window_size = window_size
-        self._tokens = text.split(' ')[:n_words]
+        self._tokens = [token for token in text.replace('\n', ' ').split(' ')[:n_words]]
         word_counter = Counter()
         word_counter.update(self._tokens)
         self._word2id = {w:i for i, (w,_) in enumerate(word_counter.most_common())}
