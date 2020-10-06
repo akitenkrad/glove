@@ -29,7 +29,7 @@ def run_train(ds_path: str, outdir:str='output', logdir: str='logs', epochs: int
     loss_values = []
     
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    glove.train().to(device)
+    glove = glove.train().to(device)
     
     os.makedirs(str(Path(outdir)), exist_ok=True)
     os.makedirs(str(Path(logdir)), exist_ok=True)
@@ -42,6 +42,7 @@ def run_train(ds_path: str, outdir:str='output', logdir: str='logs', epochs: int
 
             with tqdm(total=n_batches, desc='Training GloVe', leave=None) as batch_iter:
                 for x_ij, i_idx, j_idx in dataset.get_batches(BATCH_SIZE):
+                    x_ij, i_idx, j_idx = x_ij.to(device), i_idx.to(device), j_idx.to(device)
                     batch_i += 1
 
                     optimizer.zero_grad()
