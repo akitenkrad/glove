@@ -11,7 +11,7 @@ from torch.utils.tensorboard import SummaryWriter
 from datasets import GloveDataset
 from glove import GloveModel, weight_func, wmse_loss
 
-def run_train(ds_path: str, outdir:str='output', logdir: str='logs', epochs: int=100, embed_dim: int=300, n_words: int=10000000, batch_size: int=2048):
+def run_train(ds_path: str, outdir:str='output', logdir: str='logs', epochs: int=100, embed_dim: int=300, n_words: int=-1, batch_size: int=2048):
     N_WORDS = n_words 
     EMBED_DIM = embed_dim 
     N_EPOCHS = epochs
@@ -85,7 +85,7 @@ def build_parser():
     parser.add_argument('--epochs', type=int, default=100, help='epochs. default is 100.')
     parser.add_argument('--batch-size', type=int, default=2048, help='batch size. default is 2048.')
     parser.add_argument('--embed-dim', type=int, default=300, help='embedding dim. default is 300.')
-    parser.add_argument('--n-words', type=int, default=10000000, help='numbers of words to use for training. default=10000000.')
+    parser.add_argument('--n-words', type=int, default=-1, help='numbers of words to use for training. default=-1.')
     args = parser.parse_args()
     return args
 

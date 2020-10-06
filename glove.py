@@ -27,6 +27,33 @@ class GloveModel(nn.Module):
         
         return x
     
+    def embedding(self):
+        emb = self.wi.weight.detach().cpu().numpy() + self.wj.weight.detach().cpu().numpy()
+        return emb
+    
+    def similar_words_by_embed(self, word_embed):
+        # word_embed: (embedding_dim, )
+        # emb: (vocab_size, embedding_dim)
+        emb = self.embedding()
+        
+        # calculate cosine similarity
+        x = np.einsum('i, ji -> j', word_embed, emb)
+        norm_1 = np.sqrt(np.dot(word_embed, word_embed))
+        norm_2 = np.sqrt(np.einsum('ij, ji -> i', emb, emb.T))
+        cos_sim = x / norm_1 / norm_2
+        similar_words_indices = np.argsort(cos_sim)[::-1]
+        similar_words_scores = np.sort(cos_sim)[::-1]
+        
+        res = [(idx, score) for idx, score in zip(similar_words_indices, similar_words_scores)]
+        return res
+    
+    def similar_words_by_id(self, word_id):
+        emb = self.embedding()
+        word_embed = emb[word_id]   
+
+        similar_words = self.similar_words_by_embed(word_embed)
+        return similar_words
+        
 def weight_func(x, x_max, alpha, device):
     wx = (x / x_max)**alpha
     wx = torch.min(wx, torch.ones_like(wx))
