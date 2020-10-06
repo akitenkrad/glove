@@ -11,11 +11,11 @@ from torch.utils.tensorboard import SummaryWriter
 from datasets import GloveDataset
 from glove import GloveModel, weight_func, wmse_loss
 
-def run_train(ds_path: str, outdir:str='output', logdir: str='logs'):
-    N_WORDS = 10000000
-    EMBED_DIM = 300
-    N_EPOCHS = 100
-    BATCH_SIZE = 2048
+def run_train(ds_path: str, outdir:str='output', logdir: str='logs', epochs: int=100, embed_dim: int=300, n_words: int=10000000, batch_size: int=2048):
+    N_WORDS = n_words 
+    EMBED_DIM = embed_dim 
+    N_EPOCHS = epochs
+    BATCH_SIZE = batch_size 
     X_MAX = 100
     ALPHA = 0.75
     
@@ -60,25 +60,35 @@ def run_train(ds_path: str, outdir:str='output', logdir: str='logs'):
                     batch_iter.update(1)
                     batch_iter.set_description(batch_log)
 
-            epoch_log = 'Loss: {:.3f}  eTime: {:.1f}m'.format(np.mean(loss_values[-20:]), (time() - st) / 60.0)
+            epoch_log = 'Epoch: {}  Loss: {:.3f}  eTime: {:.1f}m'.format(epoch + 1, np.mean(loss_values[-20:]), (time() - st) / 60.0)
             epoch_iter.update(1)
             epoch_iter.set_description(epoch_log)
 
             history.add_scalar('train-loss', np.mean(loss.item()), epoch + 1)
 
-            print('Saving model...')
-            torch.save(glove.state_dict(), Path(outdir) / 'glove.pth')
+            torch.save(glove.state_dict(), str(Path(outdir) / 'glove.pth'))
+            torch.save({
+                'epoch': epoch,
+                'model_state_dict': glove.state_dict(),
+                'optimizer_state_dict': optimizer.state_dict(),
+                'loss': np.mean(loss.item())
+            }, str(Path(outdir) / 'checkpoint.pth'))
+            
         
 def build_parser():
     parser = ArgumentParser()
-    parser.add_argument('--ds-path', type=str, help='dataset path')
-    parser.add_argument('--outdir', type=str, help='output directory')
-    parser.add_argument('--logdir', type=str, help='log directory')
+    parser.add_argument('--ds-path', type=str, help='dataset path.')
+    parser.add_argument('--outdir', type=str, default='outputs', help='output directory.')
+    parser.add_argument('--logdir', type=str, default='logs', help='log directory.')
+    parser.add_argument('--epochs', type=int, default=100, help='epochs. default is 100.')
+    parser.add_argument('--batch-size', type=int, default=2048, help='batch size. default is 2048.')
+    parser.add_argument('--embed-dim', type=int, default=300, help='embedding dim. default is 300.')
+    parser.add_argument('--n-words', type=int, default=10000000, help='numbers of words to use for training. default=10000000.')
     args = parser.parse_args()
     return args
 
 if __name__ == '__main__':
     args = build_parser()
     
-    run_train(args.ds_path, args.logdir)
+    run_train(args.ds_path, args.outdir, args.logdir, args.epochs, args.embed_dim, args.n_words, args.batch_size)
     

@@ -131,5 +131,6 @@ dmypy.json
 # dataset and logs
 datasets
 logs
+outputs
 .vscode
 .DS_Store
